@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gamepad Test</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    #output {
+      font-size: 1.5em;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Xbox Gamepad Command Output</h1>
+  <p>Connect your Xbox controller and press buttons</p>
+  <div id="output">Waiting for input...</div>
+
+  <script>
+    let output = document.getElementById("output");
+    let lastCommand = "";
+
+    window.addEventListener("gamepadconnected", function(e) {
+      output.innerText = "Gamepad connected: " + e.gamepad.id;
+      console.log("Gamepad connected:", e.gamepad);
+      pollGamepad();
+    });
+
+    function pollGamepad() {
+      let gamepad = navigator.getGamepads()[0];
+      if (!gamepad) {
+        requestAnimationFrame(pollGamepad);
+        return;
+      }
+
+      const buttons = gamepad.buttons;
+      const dpad = gamepad.axes;
+
+      // Handle D-Pad (hat)
+      if (gamepad.buttons[12].pressed) setCommand("motor:forward");   // D-pad up
+      else if (gamepad.buttons[13].pressed) setCommand("motor:backwards"); // D-pad down
+      else if (gamepad.buttons[14].pressed) setCommand("motor:left");  // D-pad left
+      else if (gamepad.buttons[15].pressed) setCommand("motor:right"); // D-pad right
+      else if (buttons[2].pressed) setCommand("motor:stop");      // X
+      else if (buttons[3].pressed) setCommand("servox:moveup");   // Y
+      else if (buttons[0].pressed) setCommand("servox:movedown"); // A
+
+      requestAnimationFrame(pollGamepad);
+    }
+
+    function setCommand(text) {
+      if (text !== lastCommand) {
+        output.innerText = text;
+        lastCommand = text;
+      }
+    }
+  </script>
+</body>
+</html>

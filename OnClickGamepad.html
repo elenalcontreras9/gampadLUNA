@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Interface Manette Xbox</title>
+  <style>
+    #output {
+      font-size: 1.5em;
+      margin-top: 20px;
+      color: green;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contrôle via Manette Xbox</h1>
+  <button onclick="startGamepad()">Activer la manette</button>
+  <div id="output">Appuyez sur le bouton pour démarrer</div>
+
+  <script>
+    let output = document.getElementById("output");
+    let lastCommand = "";
+    let listening = false;
+
+    function startGamepad() {
+      listening = true;
+      output.innerText = "Manette activée, en attente d'entrée...";
+      window.addEventListener("gamepadconnected", function(e) {
+        console.log("Manette connectée :", e.gamepad);
+        output.innerText = "Manette connectée : " + e.gamepad.id;
+        pollGamepad();
+      });
+
+      // Si la manette est déjà connectée
+      if (navigator.getGamepads()[0]) {
+        pollGamepad();
+      }
+    }
+
+    function pollGamepad() {
+      if (!listening) return;
+      let gamepad = navigator.getGamepads()[0];
+      if (!gamepad) {
+        requestAnimationFrame(pollGamepad);
+        return;
+      }
+
+      const buttons = gamepad.buttons;
+
+      if (buttons[12].pressed) setCommand("motor:forward");      // D-pad up
+      else if (buttons[13].pressed) setCommand("motor:backwards");// D-pad down
+      else if (buttons[14].pressed) setCommand("motor:left");     // D-pad left
+      else if (buttons[15].pressed) setCommand("motor:right");    // D-pad right
+      else if (buttons[2].pressed) setCommand("motor:stop");      // X
+      else if (buttons[3].pressed) setCommand("servox:moveup");   // Y
+      else if (buttons[0].pressed) setCommand("servox:movedown"); // A
+
+      requestAnimationFrame(pollGamepad);
+    }
+
+    function setCommand(command) {
+      if (command !== lastCommand) {
+        lastCommand = command;
+        output.innerText = command;
+
+        // Ici, on peut ajouter des actions sur la page, par exemple :
+        // document.getElementById("robotStatus").innerText = command;
+        console.log("Commande exécutée :", command);
+      }
+    }
+  </script>
+</body>
+</html>
